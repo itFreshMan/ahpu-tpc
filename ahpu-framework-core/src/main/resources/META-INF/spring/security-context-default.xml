@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<bean id="springSecurityFilterChain" class="cn.edu.ahpu.tpc.framework.core.spring.security.FilterChainProxyFactoryBean"></bean> 
+	
+	<util:list id="innerFilterChain">
+	    <sec:filter-chain pattern="/resources/**" filters="none" />
+	    <sec:filter-chain pattern="/login" filters="none" />
+	    <sec:filter-chain pattern="/security/loginFailure" filters="none" />
+	    <sec:filter-chain pattern="/druid/**" filters="none" />
+	    <sec:filter-chain pattern="/**" 
+	    	filters="
+	    		securityContextPersistenceFilter,
+		    	logoutFilter,
+		    	cookieAuthenticationFilter,
+		    	usernamePasswordAuthenticationFilter,
+		    	securityContextHolderAwareRequestFilte,
+		    	rememberMeFilter,
+		    	sessionManagementFilter,exceptionTranslationFilter,
+		    	filterSecurityInterceptor" />
+	</util:list>
+	
+    <bean id="securityContextRepository" class="org.springframework.security.web.context.HttpSessionSecurityContextRepository" />
+	<bean id="securityContextPersistenceFilter" class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
+		<constructor-arg index="0" ref="securityContextRepository" />
+	</bean>
+  
+  	<bean id="logoutHandler" class="cn.edu.ahpu.tpc.framework.core.spring.security.LogoutHandlerImpl" ></bean> 
+  	<bean id="logoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
+		<constructor-arg value="/login"/>
+		<constructor-arg>
+			<list>
+				<ref local="logoutHandler"/>
+				<ref local="rememberMeServices"/>
+				<bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"></bean>
+			</list>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="cookieAuthenticationFilter" class="cn.edu.ahpu.tpc.framework.core.spring.security.CookieAuthenticationFilter">
+		<property name="userDetailsService" ref="userDetailsService" />
+		<property name="authenticationFailureHandler">
+			<bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler" >
+				<property name="defaultFailureUrl" value="/resources/NoUser.jsp" />
+				<property name="useForward" value="true" />
+			</bean>
+		</property>
+		<property name="authenticationSuccessHandler">
+			<bean class="cn.edu.ahpu.tpc.framework.core.spring.security.SavedRequestAwareAuthenticationSuccessHandler" />
+		</property>
+	</bean>
+   	
+   	<!-- Form 表单认证 -->
+	<bean id="usernamePasswordAuthenticationFilter" class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
+		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="authenticationFailureHandler" ref="failureHandler" />
+		<property name="authenticationSuccessHandler" ref="successHandler" />
+	  	<property name="rememberMeServices" ref="rememberMeServices"/>
+	  	<property name="sessionAuthenticationStrategy">
+	  		<bean class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy" />
+	  	</property>
+	</bean>
+	<bean id="successHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler" >
+		<property name="defaultTargetUrl" value="/security/loginSuccess.json" />
+		<property name="alwaysUseDefaultTargetUrl" value="true" />
+	</bean>
+	<bean id="failureHandler" class="cn.edu.ahpu.tpc.framework.core.spring.security.AuthenticationFailureHandlerImpl" >
+		<property name="defaultFailureUrl" value="/security/loginFailure.json" />
+		<property name="useForward" value="true" />
+	</bean>
+	
+	<bean name="securityContextHolderAwareRequestFilte" class="org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter"></bean>
+    
+    <bean id="rememberMeFilter" class="org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter">
+    	<constructor-arg index="0" ref="authenticationManager" />
+    	<constructor-arg index="1" ref="rememberMeServices" />
+	</bean>
+	
+	<bean id="rememberMeServices" class="org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices">
+		<constructor-arg index="0" value="springRocks" />
+		<constructor-arg index="1" ref="userDetailsService" />
+		<property name="alwaysRemember" value="false"/>
+	</bean>
+	
+	<bean id="rememberMeAuthenticationProvider" class="org.springframework.security.authentication.RememberMeAuthenticationProvider">
+  		<constructor-arg index="0" value="springRocks" />
+	</bean>
+	
+	<bean name="sessionManagementFilter" class="org.springframework.security.web.session.SessionManagementFilter">
+		<constructor-arg name="securityContextRepository" ref="securityContextRepository"/>
+	</bean>   
+
+	<bean id="exceptionTranslationFilter" class="org.springframework.security.web.access.ExceptionTranslationFilter">
+		<constructor-arg index="0">
+			<bean class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">   
+				<constructor-arg index="0" value="/login" />
+            </bean>
+		</constructor-arg> 
+        <property name="accessDeniedHandler">   
+            <bean class="org.springframework.security.web.access.AccessDeniedHandlerImpl">   
+                <property name="errorPage" value="/resources/unAuth.jsp"/>
+            </bean>   
+        </property>   
+	</bean>
+	
+	<bean id="securityMetadataSource" class="cn.edu.ahpu.tpc.framework.core.spring.security.HibernateFilterInvocationSecurityMetadataSource" init-method="loadSecurityMetadataSource">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<bean id="filterSecurityInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="accessDecisionManager" ref="accessDecisionManager"/>
+		<property name="securityMetadataSource">
+			<ref bean="securityMetadataSource"/>
+  		</property>
+	</bean>
+	
+	<bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+		<constructor-arg index="0">
+			<list>
+				<bean class="org.springframework.security.access.vote.RoleVoter"/>
+				<bean class="org.springframework.security.access.vote.AuthenticatedVoter"/>
+			</list>
+		</constructor-arg>
+		<property name="allowIfAllAbstainDecisions" value="false"/>
+	</bean>
+
+	<bean id="authenticationManager" class="org.springframework.security.authentication.ProviderManager">
+		<constructor-arg index="0">
+			<list>
+				<ref local="daoAuthenticationProvider"/>
+				<ref local="rememberMeAuthenticationProvider" />  
+			</list>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="saltSource" class="cn.edu.ahpu.tpc.framework.core.spring.security.DefaultSaltSource" />
+	<bean id="passwordEncoder" class="org.springframework.security.authentication.encoding.Md5PasswordEncoder" />
+	<bean id="daoAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+		<property name="userDetailsService" ref="userDetailsService" />
+		<!-- 当用户不存在时，能够抛出UsernameNotFoundException异常 -->
+		<property name="hideUserNotFoundExceptions" value="false" />
+		<property name="passwordEncoder" ref="passwordEncoder" />
+		<property name="saltSource" ref="saltSource" />
+	</bean>
+
+	<bean id="userDetailsService" class="cn.edu.ahpu.tpc.framework.core.spring.security.HibernateUserDetailsServiceImpl" />
+	
+	<bean id="authenticationLoggerListener" class="org.springframework.security.authentication.event.LoggerListener"/>
+	<bean id="authorizationLoggerListener" class="org.springframework.security.access.event.LoggerListener"/>
+	
+</beans>

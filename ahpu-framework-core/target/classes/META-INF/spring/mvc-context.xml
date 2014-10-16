@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+      http://www.springframework.org/schema/aop
+      http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+      http://www.springframework.org/schema/mvc
+      http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<bean id="jacksonObjectMapper" class="cn.edu.ahpu.tpc.framework.core.support.JacksonObjectMapperFactory" />
+	<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="false">
+			<bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"></bean>
+	        <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+	        	<property name="writeAcceptCharset" value="false" />
+	        	<property name="supportedMediaTypes">
+	        	    <list>
+	        	      <value>text/html;charset=UTF-8</value>
+	        	    </list>
+	        	</property>
+	        </bean>
+	        <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+	        	<property name="objectMapper" ref="jacksonObjectMapper"/>
+	        </bean>
+	    </mvc:message-converters>
+	</mvc:annotation-driven>
+	
+	<mvc:view-controller path="/" view-name="home" />
+	<mvc:view-controller path="/home/index" view-name="home/index" />
+	<mvc:view-controller path="/login" view-name="login" />
+	
+	<mvc:default-servlet-handler/>
+	<mvc:resources location="/resources/" mapping="/resources/**" cache-period="3600"/>
+
+	<bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+		<property name="order" value="1" />
+		<property name="contentNegotiationManager" ref="contentNegotiationManager" />  
+		<property name="defaultViews">
+			<list>
+		        <bean class="org.springframework.web.servlet.view.json.MappingJackson2JsonView">
+		        	<property name="objectMapper" ref="jacksonObjectMapper" />
+		        </bean>
+		        <bean class="cn.edu.ahpu.tpc.framework.core.spring.JXLSExcelView" /> 
+			</list>
+		</property>
+	</bean>
+	<bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+	    <property name="favorPathExtension" value="true" />
+	    <property name="favorParameter" value="false" />
+	    <property name="ignoreAcceptHeader" value="true"/>
+	    <property name="defaultContentType" value="text/html" />
+	    <property name="mediaTypes">
+	        <map>
+	            <entry key="json" value="application/json" />
+	            <entry key="xls" value="application/vnd.ms-excel" />
+	       </map>
+	    </property>
+	</bean>
+    
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">  
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />  
+        <property name="prefix" value="/WEB-INF/views/" />  
+        <property name="suffix" value=".jsp" />  
+    </bean>  
+	
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver" />
+	
+	<bean id="loginParaInit" class="cn.edu.ahpu.tpc.framework.web.util.admin.LoginParaUtil"/>
+</beans>

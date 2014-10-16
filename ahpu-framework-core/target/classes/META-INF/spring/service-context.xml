@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+      http://www.springframework.org/schema/aop
+      http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+      http://www.springframework.org/schema/tx
+      http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context-3.1.xsd
+      http://www.springframework.org/schema/jee
+      http://www.springframework.org/schema/jee/spring-jee-3.1.xsd">
+
+	<!-- 配置事务的传播特性 -->
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+	
+	<!-- 当调用BaseServiceImpl类中的insertEntity和updateEntity方法时，Intercept设置保存或者更新时间. 操作人信息 -->
+	<bean id="operateTimeIntercept" class="cn.edu.ahpu.tpc.framework.core.spring.OperateTimeIntercept" ></bean>
+	<aop:config> 
+		<aop:pointcut id="operateTimePoint_insert" 
+			expression="execution(public * cn.edu.ahpu.common.dao.service.BaseServiceImpl.insertEntity(..)) "/>
+		<aop:pointcut id="operateTimePoint_update" 
+			expression="execution(public * cn.edu.ahpu.common.dao.service.BaseServiceImpl.updateEntity(..)) "/>  
+		<aop:advisor pointcut-ref="operateTimePoint_insert" advice-ref="operateTimeIntercept"/>
+		<aop:advisor pointcut-ref="operateTimePoint_update" advice-ref="operateTimeIntercept"/>
+	</aop:config>
+</beans>

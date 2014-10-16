@@ -1,0 +1,143 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>cn.edu.ahpu</groupId>
+	<artifactId>tool.hibernate</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<url>http://maven.apache.org</url>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>3.6.8.Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-access</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<finalName>tool.hibernate</finalName>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>hibernate3-maven-plugin</artifactId>
+					<version>2.2</version>
+					<dependencies>
+						<dependency>
+							<groupId>mysql</groupId>
+							<artifactId>mysql-connector-java</artifactId>
+							<version>5.1.24</version>
+						</dependency>
+						<!-- 
+						<dependency> 
+							<groupId>com.oracle</groupId> 
+							<artifactId>ojdbc14</artifactId> 
+							<version>10.2.0.1.0</version> 
+						</dependency> 
+						-->
+						<dependency>
+							<groupId>cglib</groupId>
+							<artifactId>cglib</artifactId>
+							<version>2.2</version>
+						</dependency>
+						<dependency>
+							<groupId>org.hibernate</groupId>
+							<artifactId>hibernate</artifactId>
+							<version>3.2.6.ga</version>
+						</dependency>
+						<dependency>
+							<groupId>org.hibernate</groupId>
+							<artifactId>hibernate-annotations</artifactId>
+							<version>3.3.1.GA</version>
+						</dependency>
+						<dependency>
+							<groupId>javax.transaction</groupId>
+							<artifactId>jta</artifactId>
+							<version>1.1</version>
+						</dependency>
+						<dependency>
+							<groupId>javax.activation</groupId>
+							<artifactId>activation</artifactId>
+							<version>1.1.1</version>
+						</dependency>
+
+					</dependencies>
+					<configuration>
+						<components>
+							<component>
+								<name>hbm2ddl</name>
+								<implementation>jdbcconfiguration</implementation>
+							</component>
+							<component>
+								<name>hbm2cfgxml</name>
+								<!--<outputDirectory>target/hibernate3/generated-mappings</outputDirectory> -->
+								<outputDirectory>src/main/resources/META-INF/hibernate/</outputDirectory>
+							</component>
+							<component>
+								<name>hbm2hbmxml</name>
+								<!--<outputDirectory>target/hibernate3/generated-mappings</outputDirectory> -->
+								<outputDirectory>src/main/java</outputDirectory>
+							</component>
+							<component>
+								<name>hbm2java</name>
+								<!--<outputDirectory>target/hibernate3/generated-sources</outputDirectory> -->
+								<outputDirectory>src/main/java</outputDirectory>
+								<!-- 主要用于反向控制数据库引擎通过JDBC连接数据 ,不需要hbm文件即可生成entity -->
+								<!-- -->
+								<implementation>jdbcconfiguration</implementation>
+							</component>
+							<component>
+								<name>hbm2dao</name>
+								<!--<outputDirectory>target/hibernate3/generated-sources</outputDirectory> -->
+								<outputDirectory>src/main/java</outputDirectory>
+							</component>
+						</components>
+						<componentProperties>
+							<revengfile>src/main/resources/reveng/model.reveng.xml</revengfile>
+							<configurationfile>src/main/resources/reveng/hibernate.cfg.xml</configurationfile>
+							<templatepath>src/main/resources</templatepath>
+							<drop>true</drop>
+							<jdk5>true</jdk5>
+							<ejb3>true</ejb3>
+						</componentProperties>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>2.9.1</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>2.3</version>
+			</plugin>
+
+		</plugins>
+	</reporting>
+</project>

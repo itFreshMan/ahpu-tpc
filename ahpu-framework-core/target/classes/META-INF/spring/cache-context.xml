@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+      http://www.springframework.org/schema/aop
+      http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+      http://www.springframework.org/schema/cache 
+      http://www.springframework.org/schema/cache/spring-cache-3.1.xsd">
+
+	<bean id="cacheManager" class="cn.edu.ahpu.tpc.framework.core.cache.CacheManagerFactoryBean"></bean>
+	
+	<!--
+	redis配置实例：
+	<bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${jedis.hostName}" />
+		<property name="port" value="${jedis.port}" />
+		<property name="usePool" value="${jedis.userPool}" />
+	</bean>
+        
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate" >
+		<property name="connectionFactory" ref="jedisConnectionFactory" />
+	</bean>
+	-->
+</beans>

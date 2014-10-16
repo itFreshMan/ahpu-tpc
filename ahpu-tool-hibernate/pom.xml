@@ -1,0 +1,134 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>cn.edu.ahpu.tools.hibernate</groupId>
+	<artifactId>ahpu-tool-hibernate</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>3.6.8.Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-access</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.6.4</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>hibernate3-maven-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<components>
+						<component>
+								<name>hbm2ddl</name>
+								<implementation>jdbcconfiguration</implementation>
+							</component>
+							<component>
+								<name>hbm2cfgxml</name>
+								<!--<outputDirectory>target/hibernate3/generated-mappings</outputDirectory> -->
+								<outputDirectory>src/main/resources/META-INF/hibernate/</outputDirectory>
+							</component>
+							<component>
+								<name>hbm2hbmxml</name>
+								<!--<outputDirectory>target/hibernate3/generated-mappings</outputDirectory> -->
+								<outputDirectory>src/main/java</outputDirectory>
+							</component>
+							<component>
+								<name>hbm2java</name>
+								<!--<outputDirectory>target/hibernate3/generated-sources</outputDirectory> -->
+								<outputDirectory>src/main/java</outputDirectory>
+								<!-- 主要用于反向控制数据库引擎通过JDBC连接数据 ,不需要hbm文件即可生成entity -->
+								<!-- -->
+								<implementation>jdbcconfiguration</implementation>
+							</component>
+							<component>
+								<name>hbm2dao</name>
+								<!--<outputDirectory>target/hibernate3/generated-sources</outputDirectory> -->
+								<outputDirectory>src/main/java</outputDirectory>
+							</component>
+					</components>
+					<componentProperties>
+						<!-- Storing the reveng files in the test branch means we are not deploying 
+							connection information -->
+						<revengfile>src/main/resources/reveng/model.reveng.xml</revengfile>
+						<configurationfile>src/main/resources/reveng/hibernate.cfg.xml</configurationfile>
+						<templatepath>src/main/resources</templatepath>
+						<jdk5>true</jdk5>
+						<ejb3>true</ejb3>
+						<format>true</format>
+					</componentProperties>
+				</configuration>
+				
+				<dependencies>
+					<dependency>
+						<groupId>mysql</groupId>
+						<artifactId>mysql-connector-java</artifactId>
+						<version>5.1.24</version>
+					</dependency>
+					
+			<!-- 		
+					<dependency>
+						<groupId>com.oracle</groupId>
+						<artifactId>ojdbc5</artifactId>
+						<version>5</version>
+					</dependency>	
+			 -->
+					
+				<!-- JDBC连接oracle驱动
+				<dependency> 
+						<groupId>com.oracle</groupId> 
+						<artifactId>ojdbc14</artifactId> 
+						<version>10.2.0.1.0</version> 
+				</dependency> 
+				 -->
+				<!-- JDBC连接DB2驱动 
+				<dependency>
+					<groupId>com.ibm</groupId>
+					<artifactId>db2jcc</artifactId>
+					<version>3.66.46</version>
+				</dependency>	
+				<dependency>
+					<groupId>com.ibm</groupId>
+					<artifactId>db2jcc_license_cu</artifactId>
+					<version>3.66.46</version>
+				</dependency>	
+			 -->			
+					<dependency>
+						<groupId>cglib</groupId>
+						<artifactId>cglib-nodep</artifactId>
+						<version>2.2.2</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+		</plugins>
+	</build>
+</project>

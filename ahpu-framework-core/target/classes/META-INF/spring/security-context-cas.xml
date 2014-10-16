@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+		
+	<bean id="springSecurityFilterChain" class="cn.edu.ahpu.tpc.framework.core.spring.security.FilterChainProxyFactoryBean"></bean> 
+	
+	<util:list id="innerFilterChain">
+	    <sec:filter-chain pattern="/resources/**" filters="none" />
+	    <sec:filter-chain pattern="/login" filters="none" />
+	    <sec:filter-chain pattern="/security/loginFailure" filters="none" />
+	    <sec:filter-chain pattern="/druid/**" filters="none" />
+	    <sec:filter-chain pattern="/**" 
+	    	filters="
+	    		securityContextPersistenceFilter,
+	    		singleLogoutFilter,
+           		casLogoutFilter,
+           		casAuthenticationFilter,
+           		securityContextHolderAwareRequestFilte,
+           		rememberMeFilter,
+           		sessionManagementFilter,
+           		exceptionTranslationFilter,
+           		filterSecurityInterceptor"  />
+	</util:list>
+  
+  	<bean id="securityContextRepository" class="org.springframework.security.web.context.HttpSessionSecurityContextRepository" />
+	<bean id="securityContextPersistenceFilter" class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
+		<constructor-arg index="0" ref="securityContextRepository" />
+	</bean>
+	
+	<bean name="securityContextHolderAwareRequestFilte" class="org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter"></bean>
+    
+    <bean id="rememberMeFilter" class="org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter">
+    	<constructor-arg index="0" ref="authenticationManager" />
+    	<constructor-arg index="1" ref="rememberMeServices" />
+	</bean>
+	
+	<bean id="rememberMeServices" class="org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices">
+		<constructor-arg index="0" value="springRocks" />
+		<constructor-arg index="1" ref="userDetailsService" />
+		<property name="alwaysRemember" value="false"/>
+	</bean>
+	
+	<bean id="rememberMeAuthenticationProvider" class="org.springframework.security.authentication.RememberMeAuthenticationProvider">
+  		<constructor-arg index="0" value="springRocks" />
+	</bean>
+	
+	<bean name="sessionManagementFilter" class="org.springframework.security.web.session.SessionManagementFilter">
+		<constructor-arg name="securityContextRepository" ref="securityContextRepository"/>
+	</bean>   
+
+	<bean id="exceptionTranslationFilter" class="org.springframework.security.web.access.ExceptionTranslationFilter">
+		<property name="authenticationEntryPoint" ref="casAuthenticationEntryPoint" />
+        <property name="accessDeniedHandler">   
+            <bean class="org.springframework.security.web.access.AccessDeniedHandlerImpl">   
+                <property name="errorPage" value="/resources/unAuth.jsp"/>
+            </bean>   
+        </property>   
+	</bean>
+	
+	<bean id="securityMetadataSource" class="cn.edu.ahpu.tpc.framework.core.spring.security.HibernateFilterInvocationSecurityMetadataSource" init-method="loadSecurityMetadataSource">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<bean id="filterSecurityInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="accessDecisionManager" ref="accessDecisionManager"/>
+		<property name="securityMetadataSource">
+			<ref bean="securityMetadataSource"/>
+  		</property>
+	</bean>
+	
+	<bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+		<constructor-arg index="0">
+			<list>
+				<bean class="org.springframework.security.access.vote.RoleVoter"/>
+				<bean class="org.springframework.security.access.vote.AuthenticatedVoter"/>
+			</list>
+		</constructor-arg>
+		<property name="allowIfAllAbstainDecisions" value="false"/>
+	</bean>
+
+	<bean id="authenticationManager" class="org.springframework.security.authentication.ProviderManager">
+		<property name="providers">
+			<list>
+				<ref bean="casAuthenticationProvider"/>
+				<ref local="rememberMeAuthenticationProvider" />  
+			</list>
+		</property>
+	</bean>
+
+	<bean id="saltSource" class="cn.edu.ahpu.tpc.framework.core.spring.security.DefaultSaltSource" />
+	<bean id="passwordEncoder" class="org.springframework.security.authentication.encoding.Md5PasswordEncoder" />
+	<bean id="daoAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+		<property name="userDetailsService" ref="userDetailsService" />
+		<!-- 当用户不存在时，能够抛出UsernameNotFoundException异常 -->
+		<property name="hideUserNotFoundExceptions" value="false" />
+		<property name="passwordEncoder" ref="passwordEncoder" />
+		<property name="saltSource" ref="saltSource" />
+	</bean>
+	
+
+	<bean id="userDetailsService" class="cn.edu.ahpu.tpc.framework.core.spring.security.HibernateUserDetailsServiceImpl"></bean>
+	
+	<!-- 以下为cas配置 -->
+	<bean id="casAuthenticationFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
+  		<property name="authenticationManager" ref="authenticationManager"/>
+	</bean>
+
+	<bean id="casAuthenticationEntryPoint" class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
+  		<property name="loginUrl" value="${cas.server.url.prefix}/login"/>
+  		<property name="serviceProperties" ref="serviceProperties"/>
+	</bean>
+	
+	<bean id="serviceProperties" class="org.springframework.security.cas.ServiceProperties">   
+    	<property name="service" value="${cas.security.service}"/>   
+    	<property name="sendRenew" value="false"/>   
+	</bean>
+	
+	<bean id="casAuthenticationProvider" class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
+    	<property name="userDetailsService" ref="userDetailsService"/>
+    	<property name="serviceProperties" ref="serviceProperties" />
+    	<property name="ticketValidator">
+      		<bean class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">
+        		<constructor-arg index="0" value="${cas.server.url.prefix}" />
+        	</bean>
+    	</property>
+    	<property name="key" value="springRocks"/>
+  	</bean>
+  	
+  	<!-- 单点退出 -->
+  	<bean id="singleLogoutFilter" class="org.jasig.cas.client.session.SingleSignOutFilter"/>
+  	<bean id="casLogoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
+    	<constructor-arg value="${cas.server.url.prefix}/logout?service=${cas.security.web.url}"/>
+   		<constructor-arg>
+     			<bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"/>
+   		</constructor-arg>
+    	<property name="filterProcessesUrl" value="/j_spring_cas_security_logout"/>
+  	</bean>
+</beans>
