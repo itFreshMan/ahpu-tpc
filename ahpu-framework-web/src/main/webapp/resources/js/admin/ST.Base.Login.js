@@ -13,6 +13,8 @@ Ext.ux.LoginWindow = function(config) {
             + ".ux-auth-close {background-image: url('" + this.basePath
             + "/close.gif') !important}";
 
+    console.info(css);
+    
     Ext.util.CSS.createStyleSheet(css, this._cssId);
     this.addEvents( {
         'show' : true,
