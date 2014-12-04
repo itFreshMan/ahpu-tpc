@@ -272,7 +272,7 @@ var HomePage = Ext.extend(Ext.Viewport, {
 					var panel = new Ext.tree.TreePanel({
 						id: root.id,
 						title: root.text,
-						iconCls: root.iconCls == null?"picture" : root.iconCls,
+						iconCls: (root.iconCls == null || root.iconCls == '' ||root.iconCls.trim().length == 0)?"picture" : root.iconCls,
 						layout: "fit",
 						animate: true,
 						border: false,
