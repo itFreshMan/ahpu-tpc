@@ -53,6 +53,7 @@ ST.base.PersonConfig = function () {
 		                        waitMsg : '正在处理，请稍等...',
 	                            success: function() {
 	                                Ext.MessageBox.alert("提示", "保存成功");
+	                                win.hide();
 	                            },
 	                            failure: function(a, b) {
 	                            	Ext.MessageBox.alert("提示", b.result.message);
