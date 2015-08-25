@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE hibernate-reverse-engineering SYSTEM "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd">
 <hibernate-reverse-engineering>
-
-    <table-filter match-name="tpc_user" package="cn.edu.ahpu.tpc.framework.web.model"/>
-
+   <!--  <table-filter  match-name="TEMP_SUPPLIERS" package="cn.edu.ahpu.tpc.framework.web.model"/> -->
+   
+   <!--oracle match-schema为表的所有者 -->
+    <schema-selection match-schema="ZUSER"  match-table="TEMP_.*"/> 
 </hibernate-reverse-engineering>
